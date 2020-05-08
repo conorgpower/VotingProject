@@ -1,7 +1,6 @@
 module Clean.CleanVotes where
 
-import Debug.Trace
-import Data.List(sortBy, groupBy, delete)
+import Data.List(sortBy)
 import Data.Function (on)
 import Data.List.Split(splitOn)
 
@@ -9,52 +8,65 @@ type Candidate  = (Char, String)
 type Vote       = [(Char, String)]
 type Count     = (Char, Int)
 
-----------------------------------------------------------
----------------- General Cleaning Methods ----------------
-----------------------------------------------------------
+----------------------
+-- CLEANING LIBRARY --
+----------------------
 
--- candidates = 
+-- Input:  CSV as a String
+-- Output: List of Votes as Strings
+firstClean :: String -> [[String]]
+firstClean xs = do
+  let zs = map (splitOn ",") (splitOn "\r\n" xs)
+  filter (/=[]) (map (filter(/="")) zs)
 
--- Takes the first entry of dirtyVotes, removes empty strings and creates a number for each viable candidate
+-- Input:  CSV as a String
+-- Output: List of Candidates
 getAllCandidates :: String -> [Candidate]
--- getAllCandidates xs = zip ['A'..] (drop 2 (head xs))
+getAllCandidates xs = zip ['A'..] (head (firstClean xs))
 
-getAllCandidates xs = zip ['A'..] (head (drop 1 (filterVotes (splitVotes xs))))
-
--- Lists all valid votes (removes any with empty strings)
+-- Input:  List of Votes as Strings
+-- Output: List of valid votes without emptys and additional data
 getVotes :: [[String]] -> [[String]]
-getVotes xs =  drop 2 [drop 2 x | x <- xs, "" `notElem` x]
+getVotes xs = drop 1 [drop 2 x | x <- xs, "" `notElem` x]
 
--- Assigns a character from the list ['A'..] to each element in each individual vote indicating which candidate each prefrence is for
+-- Input:  List of Votes as Strings
+-- Output: List of Votes zipped [A..E]
 pairVotes :: [[String]] -> [Vote]
 pairVotes xs = [zip ['A'..] x | x <- getVotes xs]
 
--- Filters out any preference that has an asterisk instead of a valid vote
-findStars :: Vote -> Vote
-findStars = filter ((/="*") . snd)
-
--- Function to go through the entire list of Votes and remove asterisks
+-- Input:  List of Votes potentially with asterisks
+-- Output: List of Votes without asterisks
 removeStars :: [Vote] -> [Vote]
-removeStars = map findStars
+removeStars = map (filter ((/="*") . snd))
 
--- Sorts the votes into ascending order (Sort by preference)
+-- Input:  List of Votes
+-- Output: List of Votes sorted by preference
 sortVotes :: [Vote] -> [Vote]
 sortVotes = map (sortBy (compare `on` snd))
 
--- Checks each Vote to fund their first preference
+-- Input:  Char of Candidate & Vote
+-- Output: Int to represent the preference
 checker :: Char -> Vote -> Int
-checker x list = sum $ map (const 1) $ filter (== (x, "1")) list
+checker x xs = sum $ map (const 1) $ filter (== (x, "1")) xs
 
--- Loops through the entire set of Votes to find the first preference of each voter
+-- Input:  Candidate Char & List of Votes
+-- Output: List of Ints representing the vote prteferences
 checkAllVotes :: Char -> [Vote] -> [Int]
 checkAllVotes x = map (checker x)
 
-splitVotes :: String -> [[String]]
-splitVotes xs = map (splitOn ",") (splitOn "\n" xs)
+-- Input:  List of Votes as Strings
+-- Output: List of Votes fully cleaned
+secondClean :: [[String]] -> [Vote]
+secondClean xs = sortVotes (removeStars (pairVotes xs))
 
-filterVotes :: [[String]] -> [[String]]
-filterVotes xs = filter (/= []) (map (filter(not . null)) xs)
+-- Input:  Vote potentally without next preference at "1"
+-- Output: Vote with next prefence as "1"
+changePref :: Vote -> Vote
+changePref [] = []
+changePref [x] = [(fst x, "1")]
+changePref (x:xs) = (fst x, "1") : xs
 
--- Pairs, removes asterisks and sorts the list of DirtyVotes
-cleanVotes :: String -> [Vote]
-cleanVotes dirtyVotes =  sortVotes (removeStars (pairVotes (filterVotes (splitVotes dirtyVotes))))
+-- Input:  List of Votes potentally without next preference at "1"
+-- Output: List of Votes with next prefence as "1"
+resetVote :: [Vote] -> [Vote]
+resetVote = map changePref

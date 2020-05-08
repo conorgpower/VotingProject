@@ -4,16 +4,16 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b479e1fa71634f9dfbe6a1d98a64aab7478b265c0e209f932a8510c609e1562a
+-- hash: 7f34601c63fa0d09dd05ba1ff43422a790a0b4ff969ea49feb215c7f17466fd0
 
 name:           VotingProject
 version:        0.1.0.0
 description:    Please see the README on GitHub at <https://github.com/githubuser/VotingProject#readme>
-homepage:       https://github.com/githubuser/VotingProject#readme
-bug-reports:    https://github.com/githubuser/VotingProject/issues
-author:         Author name here
+homepage:       https://github.com/conorgpower/VotingProject#readme
+bug-reports:    https://github.com/conorgpower/VotingProject/issues
+author:         Conor Power
 maintainer:     example@example.com
-copyright:      2020 Author name here
+copyright:      2020 Conor Power
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
@@ -23,7 +23,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/VotingProject
+  location: https://github.com/conorgpower/VotingProject
 
 library
   exposed-modules:
